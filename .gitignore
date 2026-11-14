@@ -1,0 +1,8 @@
+.DS_Store
+.env*
+node_modules/
+# Yours alone: who you are, the clients you made, every call
+practice/profile.json
+practice/scenarios.json
+practice/runs/
+coach/runs/

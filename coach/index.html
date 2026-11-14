@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en-ZA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Call coach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* Build with AI design system: paper, emerald, sun, coral, ink outlines, pills, hard shadows. Same as practice/. */
+  :root {
+    --paper: #fffdf8; --sand: #f4eada; --sand-deep: #e6d8bf; --soft: #d8e3dd; --line: #e7ede9;
+    --emerald: #047857; --emerald-deep: #064e3b; --sun: #f5c542; --coral: #ff7a59;
+    --ink: #10241c; --ink-soft: #33463d;
+    --ease: cubic-bezier(.16, 1, .3, 1);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--ink); background: var(--paper); font: 17px/1.6 Figtree, ui-sans-serif, system-ui, sans-serif; }
+  h1, h2, h3 { margin: 0; font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif; font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; text-wrap: balance; }
+  p { margin: 0 0 10px; }
+  .soft { color: var(--ink-soft); }
+  .hidden { display: none !important; }
+  .mono { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+
+  header.bar { background: var(--emerald-deep); color: var(--paper); border-bottom: 3px solid var(--ink); }
+  header.bar .in { max-width: 1280px; margin: 0 auto; padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .mark { width: 40px; height: 40px; border-radius: 999px; background: var(--sun); color: var(--ink); border: 2.5px solid var(--ink); display: grid; place-items: center; font: 700 20px "Bricolage Grotesque", sans-serif; }
+  header.bar h1 { font-size: 22px; }
+  header.bar .sub { color: var(--soft); }
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; align-items: center; }
+  .pill { font-size: 12.8px; font-weight: 700; padding: 3px 12px; border-radius: 999px; border: 2px solid var(--ink); background: var(--paper); color: var(--ink); white-space: nowrap; }
+  .pill.on { background: var(--soft); } .pill.bad { background: var(--coral); } .pill.clock { background: var(--sun); font-variant-numeric: tabular-nums; }
+
+  main { max-width: 1280px; margin: 0 auto; padding: 28px 16px 64px; }
+  .panel { background: var(--paper); border: 3px solid var(--ink); border-radius: 32px; padding: 24px; }
+  .label { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .label .mono::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--emerald); margin-right: 8px; vertical-align: 1px; }
+
+  button { font: 700 15px Figtree, sans-serif; cursor: pointer; border-radius: 999px; border: 2.5px solid var(--ink); background: var(--paper); color: var(--ink); padding: 11px 20px; transition: background .2s var(--ease), transform .25s var(--ease), box-shadow .25s var(--ease); }
+  button:hover { background: var(--sun); }
+  button.go { background: var(--emerald); color: var(--paper); }
+  button.go:hover:not(:disabled) { background: var(--emerald-deep); transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--ink); }
+  button.stop { background: var(--coral); }
+  button:disabled { opacity: .45; cursor: default; }
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2.5px solid var(--ink); outline-offset: 3px; }
+
+  /* Setup */
+  .split { display: grid; grid-template-columns: 1.1fr .9fr; gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
+  .hero h2 { font-size: clamp(30px, 4vw, 44px); margin-bottom: 8px; }
+  .field { margin-top: 14px; }
+  .field > span { display: block; font-weight: 700; font-size: 14px; margin-bottom: 5px; }
+  input[type=text], textarea, select { width: 100%; font: inherit; padding: 10px 16px; border-radius: 18px; border: 2.5px solid var(--ink); background: var(--paper); color: var(--ink); }
+  textarea { min-height: 70px; resize: vertical; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 620px) { .two { grid-template-columns: 1fr; } }
+  .seg { display: flex; gap: 8px; flex-wrap: wrap; }
+  .seg label { cursor: pointer; }
+  .seg input { position: absolute; opacity: 0; }
+  .seg span { display: inline-block; padding: 8px 18px; border-radius: 999px; border: 2.5px solid var(--ink); font-weight: 700; font-size: 14px; }
+  .seg input:checked + span { background: var(--emerald); color: var(--paper); }
+  .seg input:focus-visible + span { outline: 2.5px solid var(--ink); outline-offset: 3px; }
+  .note { font-size: 14px; color: var(--ink-soft); margin-top: 6px; }
+
+  .step { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 14px 0; border-top: 2px dashed var(--sand-deep); }
+  .step:first-of-type { border-top: 0; }
+  .step .n { width: 44px; height: 44px; border-radius: 50%; border: 2.5px solid var(--ink); display: grid; place-items: center; font: 700 18px "Bricolage Grotesque", sans-serif; }
+  .step.done .n { background: var(--emerald); color: var(--paper); }
+  .step .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .meter { height: 14px; width: 130px; background: var(--paper); border: 2px solid var(--ink); border-radius: 999px; overflow: hidden; }
+  .meter i { display: block; height: 100%; width: 0; background: var(--emerald); transition: width .1s; }
+  .meter.client i { background: var(--sun); }
+  #error, #error2 { color: #b3261e; font-weight: 700; margin-top: 10px; min-height: 22px; font-size: 15px; }
+
+  /* Live */
+  .route { display: grid; grid-template-columns: repeat(6, 1fr); position: relative; margin-bottom: 20px; }
+  .route::before { content: ""; position: absolute; left: 8%; right: 8%; top: 21px; border-top: 2.5px dashed var(--ink); }
+  .station { display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; }
+  .station .num { position: relative; z-index: 1; width: 44px; height: 44px; border-radius: 50%; border: 2.5px solid var(--ink); background: var(--paper); display: grid; place-items: center; font: 700 18px "Bricolage Grotesque", sans-serif; transition: transform .3s var(--ease); }
+  .station .nm { font-size: 14px; font-weight: 700; }
+  .station .mv { font-size: 12px; color: var(--ink-soft); }
+  .station.past .num { background: var(--emerald); color: var(--paper); }
+  .station.here .num { background: var(--sun); box-shadow: 4px 4px 0 var(--ink); transform: translateY(-3px); }
+  @media (max-width: 620px) { .station .mv { display: none; } .station .num { width: 34px; height: 34px; font-size: 15px; } .route::before { top: 16px; } }
+
+  .livegrid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 20px; align-items: start; }
+  @media (max-width: 1000px) { .livegrid { grid-template-columns: 1fr; } }
+  .ask { background: var(--sand); }
+  .pathtag { margin-left: auto; }
+  #next { font: 700 clamp(26px, 2.6vw, 34px)/1.2 "Bricolage Grotesque", sans-serif; letter-spacing: -0.02em; min-height: 82px; margin: 4px 0 8px; }
+  #why { color: var(--ink-soft); min-height: 24px; }
+
+  .nudge { display: none; margin-top: 16px; padding: 14px 18px; border-radius: 20px; border: 2.5px solid var(--ink); box-shadow: 5px 5px 0 var(--ink); font-weight: 700; font-size: 20px; }
+  .nudge.show { display: block; animation: pop .35s var(--ease); }
+  .nudge.mirror, .nudge.label { background: var(--coral); }
+  .nudge.pause { background: var(--soft); }
+  .nudge small { display: block; font: 700 12px Figtree, sans-serif; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 2px; }
+  #watch { display: none; margin-top: 14px; padding: 10px 16px; border-radius: 999px; border: 2.5px solid var(--ink); background: var(--sun); font-weight: 700; }
+  @keyframes pop { from { transform: scale(.96); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .nudge.show { animation: none; } }
+
+  .gauges { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; }
+  .gauge { border: 2.5px solid var(--ink); border-radius: 22px; padding: 12px 16px; background: var(--paper); }
+  .gauge b { font: 700 28px "Bricolage Grotesque", sans-serif; font-variant-numeric: tabular-nums; }
+  .gauge.warn { background: var(--coral); }
+  .bar { height: 14px; border-radius: 999px; border: 2px solid var(--ink); background: var(--paper); overflow: hidden; margin-top: 6px; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--emerald); transition: width .4s var(--ease); }
+  .bar.high i { background: var(--coral); }
+
+  .have { list-style: none; padding: 0; margin: 18px 0 0; }
+  .have li { display: grid; grid-template-columns: 28px 110px 1fr; gap: 8px; padding: 8px 0; border-top: 1px solid var(--sand-deep); align-items: center; }
+  .have .tick { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--ink); background: var(--paper); }
+  .have li.got .tick { background: var(--emerald); }
+  .have .k { font-weight: 700; font-size: 14px; }
+  .have .v { color: var(--ink-soft); font-size: 15px; }
+  .have li:not(.got) .v { opacity: .55; }
+
+  .cols { display: grid; gap: 12px; grid-template-columns: 1fr; }
+  .cols.two { grid-template-columns: 1fr 1fr; }
+  .col h3 { font-size: 16px; margin: 0 0 8px; display: flex; justify-content: space-between; gap: 8px; }
+  .col h3 small { font: 500 13px Figtree, sans-serif; color: var(--ink-soft); }
+  .lines { height: 58vh; overflow-y: auto; border: 2.5px solid var(--ink); border-radius: 22px; padding: 14px; background: var(--paper); }
+  .l { margin: 0 0 10px; padding: 8px 12px; border-radius: 16px; max-width: 92%; }
+  .l.you { background: var(--soft); margin-left: auto; }
+  .l.client { background: var(--sand); }
+  .l b { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+  .l.rough { opacity: .6; font-style: italic; }
+  .l small { color: var(--ink-soft); margin-left: 6px; font-size: 12px; }
+  .ears { display: flex; gap: 10px; align-items: center; font-size: 13px; font-weight: 700; }
+
+  /* Debrief */
+  .say { font: 700 22px/1.35 "Bricolage Grotesque", sans-serif; letter-spacing: -0.01em; }
+  .stopgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 10px 0 18px; }
+  @media (max-width: 760px) { .stopgrid { grid-template-columns: 1fr; } }
+  .stopcard { border: 2.5px solid var(--ink); border-radius: 22px; padding: 12px 16px; }
+  .stopcard.hit { background: var(--soft); } .stopcard.partly { background: var(--sun); } .stopcard.missed { background: var(--coral); }
+  .stopcard b { font-family: "Bricolage Grotesque", sans-serif; font-size: 18px; }
+  .lens { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 10px 0 18px; }
+  @media (max-width: 760px) { .lens { grid-template-columns: repeat(2, 1fr); } }
+  .lens div { border: 2.5px solid var(--ink); border-radius: 18px; padding: 10px; text-align: center; }
+  .lens div.zero { background: var(--coral); }
+  .lens b { display: block; font: 700 28px "Bricolage Grotesque", sans-serif; }
+  .lens span { font-size: 13px; font-weight: 700; }
+  .one { background: var(--sun); border: 2.5px solid var(--ink); border-radius: 22px; box-shadow: 5px 5px 0 var(--ink); padding: 14px 18px; margin: 16px 0; }
+  #debrief h3 { font-size: 18px; margin-top: 18px; }
+  #debrief ul { padding-left: 20px; }
+</style>
+</head>
+<body>
+<header class="bar"><div class="in">
+  <div class="mark">C</div>
+  <div><h1>Call coach</h1><div class="mono sub">Build with AI · discovery calls</div></div>
+  <div class="pills">
+    <span class="pill" id="pLocal">Local Whisper: checking</span>
+    <span class="pill" id="pDg">Deepgram: checking</span>
+    <span class="pill" id="pCoach">Coach: waiting</span>
+    <span class="pill clock" id="pClock">00:00</span>
+    <button class="stop hidden" id="end">End call and debrief</button>
+  </div>
+</div></header>
+
+<main id="setup">
+  <div class="split">
+    <section class="panel hero">
+      <div class="label"><span class="mono">Before the call</span></div>
+      <h2>Who are you walking the site with?</h2>
+      <p class="soft">Two lines are enough. The coach uses this to judge the Welcome and to pick Reframe or Explore.</p>
+      <div class="two">
+        <label class="field"><span>Name or business</span><input type="text" id="label" placeholder="Camille, Studio Souffle"></label>
+        <label class="field"><span>Introduced by</span><input type="text" id="referral" placeholder="Blank if nobody"></label>
+      </div>
+      <label class="field"><span>What did they ask for? Leave blank if nothing yet</span><input type="text" id="asked" placeholder="A chatbot, help with social media..."></label>
+      <label class="field"><span>Anything else you know (optional)</span><textarea id="context" placeholder="What you heard about them. A line or two."></textarea></label>
+      <div class="field"><span>What kind of call?</span>
+        <div class="seg">
+          <label><input type="radio" name="mode" value="practice" checked><span>Practice</span></label>
+          <label><input type="radio" name="mode" value="real"><span>Real client</span></label>
+        </div>
+        <p class="note">A real call is saved outside this repo. Tell the client it is being transcribed.</p>
+      </div>
+      <div class="two">
+        <label class="field"><span>Which ears?</span>
+          <select id="engine">
+            <option value="both">Both, side by side</option>
+            <option value="deepgram">Deepgram only (fastest)</option>
+            <option value="local">Local Whisper only (stays on this Mac)</option>
+          </select></label>
+        <label class="field"><span>Coach reads</span>
+          <select id="primary">
+            <option value="deepgram">Deepgram</option>
+            <option value="local">Local Whisper</option>
+          </select></label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="label"><span class="mono">Sound check</span></div>
+      <div class="step" id="s1"><span class="n">1</span><div>
+        <div class="row"><button id="mic">Turn on my mic</button><span class="meter"><i id="mYou"></i></span></div>
+        <p class="note">Wear headphones, or the client lands under your name.</p></div></div>
+      <div class="step" id="s2"><span class="n">2</span><div>
+        <div class="row"><button id="call">Share the call's sound</button><span class="meter client"><i id="mClient"></i></span></div>
+        <p class="note">Chrome tab: pick it, tick <b>Also share tab audio</b>.<br>Zoom or Teams: <b>Entire screen</b>, tick <b>Also share system audio</b>.</p></div></div>
+      <div class="step" id="s3"><span class="n">3</span><div>
+        <div class="row"><button class="go" id="start" disabled>Start coaching</button></div>
+        <p class="note">Both bars should move before you start.</p></div></div>
+      <div id="error"></div>
+    </section>
+  </div>
+</main>
+
+<main id="live" class="hidden">
+  <div class="route" id="route"></div>
+  <div class="livegrid">
+    <section class="panel ask">
+      <div class="label"><span class="mono">Ask next</span><span class="pill pathtag hidden" id="path"></span></div>
+      <div id="next">Listening. The first card comes once the client has spoken.</div>
+      <div id="why"></div>
+      <div class="nudge" id="nudge"></div>
+      <div id="watch"></div>
+      <div class="gauges">
+        <div class="gauge" id="gShare"><span class="mono">Your share</span><br><b id="shareN">0</b><b>%</b><div class="bar" id="shareBar"><i></i></div></div>
+        <div class="gauge" id="gTurn"><span class="mono">Your turn</span><br><b id="turnN">0</b><b> s</b><div class="soft" style="font-size:13px" id="turnHint">Under 30 s keeps the floor theirs</div></div>
+      </div>
+      <ul class="have" id="have"></ul>
+      <div id="error2"></div>
+    </section>
+    <section class="panel">
+      <div class="label" style="justify-content:space-between"><span class="mono">What was said</span>
+        <span class="ears">You <span class="meter"><i id="mYou2"></i></span> Client <span class="meter client"><i id="mClient2"></i></span></span></div>
+      <div class="cols" id="cols">
+        <div class="col" id="colLocal"><h3>Local Whisper <small id="lagLocal"></small></h3><div class="lines" id="linesLocal"></div></div>
+        <div class="col" id="colDg"><h3>Deepgram <small id="lagDg"></small></h3><div class="lines" id="linesDg"></div></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<main id="after" class="hidden" style="max-width:960px">
+  <section class="panel" id="debrief"><div class="label"><span class="mono">Debrief</span></div><p>Writing the debrief. About half a minute.</p></section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const HAVE = [["ask", "The ask"], ["pain", "The pain"], ["constraint", "Stuck at"], ["number", "The number"], ["where", "It lives in"], ["target", "Target"]];
+const STOPS = [["Welcome", "Frame"], ["Gate", "Reframe / Explore"], ["Site", "Map"], ["Office", "Score"], ["Board", "Sort"], ["Show", "Close"]];
+const state = { ctx: null, ws: null, live: false, micOn: false, callOn: false, heard: { you: false, client: false }, startedAt: 0, lag: { local: [], deepgram: [] }, rough: {}, lastClient: 0, turnStart: 0, lastYou: 0 };
+
+const showError = (text) => { $("error").textContent = text; $("error2").textContent = text; };
+const pill = (el, text, cls) => { el.textContent = text; el.className = "pill" + (cls ? " " + cls : ""); };
+
+// The route of six stops.
+for (const [i, [nm, mv]] of STOPS.entries()) {
+  const d = document.createElement("div");
+  d.className = "station"; d.dataset.s = nm;
+  d.innerHTML = `<span class="num">${i + 1}</span><span class="nm">${nm}</span><span class="mv">${mv}</span>`;
+  $("route").append(d);
+}
+
+fetch("/api/profile").then((r) => r.json()).then((p) => { if (!$("referral").value) $("referral").value = p.referrer || ""; }).catch(() => {});
+fetch("/api/ready").then((r) => r.json()).then((r) => {
+  pill($("pLocal"), "Local Whisper: " + r.local, r.local === "ready" ? "on" : "bad");
+  pill($("pDg"), r.deepgramKey ? "Deepgram: key found" : "Deepgram: no key yet", r.deepgramKey ? "on" : "bad");
+  if (!r.deepgramKey) { $("engine").value = "local"; $("primary").value = "local"; }
+});
+
+$("engine").addEventListener("change", () => {
+  const e = $("engine").value;
+  if (e !== "both") $("primary").value = e;
+  $("primary").disabled = e !== "both";
+});
+
+// The page turns sound into 16 kHz samples and sends them in 100 ms pieces.
+const TAP = `class Tap extends AudioWorkletProcessor {
+  constructor() { super(); this.buf = new Float32Array(1600); this.n = 0; }
+  process(inputs) {
+    const ch = inputs[0] && inputs[0][0];
+    if (ch) for (let i = 0; i < ch.length; i++) {
+      this.buf[this.n++] = ch[i];
+      if (this.n === 1600) { this.port.postMessage(this.buf.slice(0)); this.n = 0; }
+    }
+    return true;
+  }
+}
+registerProcessor("tap", Tap);`;
+
+async function audioContext() {
+  if (state.ctx) return state.ctx;
+  const ctx = new AudioContext({ sampleRate: 16000 });
+  await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([TAP], { type: "application/javascript" })));
+  state.ctx = ctx;
+  return ctx;
+}
+
+async function tap(stream, who) {
+  const ctx = await audioContext();
+  await ctx.resume();
+  const node = new AudioWorkletNode(ctx, "tap", { numberOfInputs: 1, numberOfOutputs: 1, channelCount: 1, channelCountMode: "explicit", channelInterpretation: "speakers" });
+  const mute = ctx.createGain();
+  mute.gain.value = 0;
+  ctx.createMediaStreamSource(stream).connect(node).connect(mute).connect(ctx.destination);
+  const chan = who === "client" ? 1 : 0;
+  node.port.onmessage = (event) => {
+    const f = event.data;
+    let peak = 0;
+    const out = new Uint8Array(1 + f.length * 2);
+    out[0] = chan;
+    const view = new DataView(out.buffer);
+    for (let i = 0; i < f.length; i++) {
+      const s = Math.max(-1, Math.min(1, f[i]));
+      if (Math.abs(s) > peak) peak = Math.abs(s);
+      view.setInt16(1 + i * 2, s * 32767, true);
+    }
+    const width = Math.min(100, Math.round(peak * 260)) + "%";
+    for (const id of who === "you" ? ["mYou", "mYou2"] : ["mClient", "mClient2"]) $(id).style.width = width;
+    if (peak > 0.03) {
+      state.heard[who] = true; ready();
+      const now = Date.now();
+      if (who === "client") { state.lastClient = now; state.turnStart = 0; }
+      else { if (!state.turnStart && now - state.lastClient > 1200) state.turnStart = now; state.lastYou = now; }
+    }
+    if (state.live && state.ws && state.ws.readyState === 1) state.ws.send(out);
+  };
+}
+
+// Your turn: seconds you have held the floor since the client last spoke.
+setInterval(() => {
+  if (!state.live) return;
+  const now = Date.now();
+  if (state.turnStart && now - state.lastYou > 2500) state.turnStart = 0; // you stopped, a held pause
+  const s = state.turnStart ? Math.round((now - state.turnStart) / 1000) : 0;
+  $("turnN").textContent = s;
+  $("gTurn").classList.toggle("warn", s >= 30);
+  $("turnHint").textContent = s >= 30 ? "Hand it back: ask one question" : "Under 30 s keeps the floor theirs";
+}, 500);
+
+function ready() {
+  $("s1").classList.toggle("done", state.micOn && state.heard.you);
+  $("s2").classList.toggle("done", state.callOn && state.heard.client);
+  $("start").disabled = !state.micOn;
+}
+
+$("mic").addEventListener("click", async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+    await tap(stream, "you");
+    state.micOn = true;
+    $("mic").textContent = "Mic is on";
+    $("mic").disabled = true;
+    ready();
+  } catch (err) { showError("Mic: " + err.message); }
+});
+
+$("call").addEventListener("click", async () => {
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: { systemAudio: "include", suppressLocalAudioPlayback: false, echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    if (!stream.getAudioTracks().length) {
+      stream.getTracks().forEach((t) => t.stop());
+      showError("No sound came with that share. Try again and tick the audio box in Chrome's picker.");
+      return;
+    }
+    stream.getVideoTracks().forEach((t) => { t.enabled = false; }); // the picture is never used or sent
+    await tap(new MediaStream(stream.getAudioTracks()), "client");
+    stream.getAudioTracks()[0].addEventListener("ended", () => showError("The call's sound stopped being shared."));
+    state.callOn = true;
+    $("call").textContent = "Call sound is on";
+    $("call").disabled = true;
+    showError("");
+    ready();
+  } catch (err) { showError("Call sound: " + err.message); }
+});
+
+function line(engine, who, text, lagMs, rough) {
+  const box = engine === "local" ? $("linesLocal") : $("linesDg");
+  const key = engine + who;
+  if (state.rough[key]) { state.rough[key].remove(); state.rough[key] = null; }
+  if (!text) return;
+  const p = document.createElement("p");
+  p.className = "l " + who + (rough ? " rough" : "");
+  const b = document.createElement("b");
+  b.textContent = who === "you" ? "You" : "Client";
+  p.append(b, document.createTextNode(text));
+  if (!rough && lagMs !== undefined) {
+    const s = document.createElement("small");
+    s.textContent = (lagMs / 1000).toFixed(1) + " s";
+    p.append(s);
+  }
+  if (rough) state.rough[key] = p;
+  box.append(p);
+  box.scrollTop = box.scrollHeight;
+}
+
+function card(c, share) {
+  const at = STOPS.findIndex(([nm]) => nm === c.stop);
+  document.querySelectorAll("#route .station").forEach((el, i) => { el.className = "station" + (i === at ? " here" : i < at ? " past" : ""); });
+  $("path").textContent = c.path || "";
+  $("path").classList.toggle("hidden", !c.path);
+  $("next").textContent = c.next || "Say nothing. Let them carry on.";
+  $("why").textContent = c.why || "";
+  $("watch").textContent = c.watch || "";
+  $("watch").style.display = c.watch ? "block" : "none";
+  const n = c.nudge || {};
+  const nudge = $("nudge");
+  nudge.className = "nudge";
+  nudge.textContent = "";
+  if (n.kind) {
+    const small = document.createElement("small");
+    small.textContent = n.kind === "mirror" ? "Mirror it" : n.kind === "label" ? "Label it" : "Hold the pause";
+    nudge.append(small, document.createTextNode(n.kind === "pause" ? "Stay quiet. Let them fill it." : `"${n.echo}"`));
+    void nudge.offsetWidth;
+    nudge.className = "nudge show " + n.kind;
+  }
+  const ul = $("have");
+  ul.textContent = "";
+  for (const [k, name] of HAVE) {
+    const v = (c.have && c.have[k]) || "";
+    const li = document.createElement("li");
+    if (v) li.className = "got";
+    const t = document.createElement("span"); t.className = "tick";
+    const kk = document.createElement("span"); kk.className = "k"; kk.textContent = name;
+    const vv = document.createElement("span"); vv.className = "v"; vv.textContent = v || "not yet";
+    li.append(t, kk, vv);
+    ul.append(li);
+  }
+  share !== undefined && setShare(share);
+}
+
+function setShare(n) {
+  $("shareN").textContent = n;
+  $("shareBar").firstElementChild.style.width = n + "%";
+  $("shareBar").classList.toggle("high", n > 40);
+  $("gShare").classList.toggle("warn", n > 50);
+}
+
+function debrief(m) {
+  const d = m.debrief, c = m.counts || {}, lens = d.lens || {};
+  const box = $("debrief");
+  box.textContent = "";
+  const add = (tag, text, cls, parent = box) => { const el = document.createElement(tag); if (text) el.textContent = text; if (cls) el.className = cls; parent.append(el); return el; };
+  const lab = add("div", "", "label"); add("span", "Debrief", "mono", lab);
+  add("h3", "Say it back");
+  add("p", d.sayBack, "say");
+  const one = add("div", "", "one"); add("div", "One thing next time", "mono", one); add("div", d.oneThing, "", one);
+  add("h3", "The site walk");
+  const grid = add("div", "", "stopgrid");
+  for (const s of d.stops) { const sc = add("div", "", "stopcard " + s.mark, grid); add("b", `${s.stop}: ${s.mark}`, "", sc); add("div", s.note, "", sc); }
+  add("h3", "Voss lens");
+  const lg = add("div", "", "lens");
+  for (const [v, name] of [[lens.mirrors, "Mirrors"], [lens.labels, "Labels"], [lens.impact, "Impact Qs"], [`${c.open ?? 0}/${c.questions ?? 0}`, "Open Qs"], [c.longest ?? 0, "Longest turn"]]) {
+    const cell = add("div", "", (v === 0 ? "zero" : ""), lg); add("b", String(v), "", cell); add("span", name, "", cell);
+  }
+  if (lens.missedMirror && lens.missedMirror.client) add("p", `Missed mirror: when they said "${lens.missedMirror.client}", try "${lens.missedMirror.tryThis}"`);
+  if (d.best) add("p", "Best moment: " + d.best);
+  if (d.earned) add("p", "Earned the proposal: " + d.earned);
+  if (d.neverAsked && d.neverAsked.length) { add("h3", "Never asked"); const ul = add("ul", ""); for (const n of d.neverAsked) add("li", n, "", ul); }
+  const avg = (a) => a.length ? (a.reduce((x, y) => x + y, 0) / a.length / 1000).toFixed(1) + " s behind" : "not used";
+  add("p", `Your share of the talking: ${m.share}%. Local Whisper: ${avg(state.lag.local)}. Deepgram: ${avg(state.lag.deepgram)}.`, "soft");
+  add("p", "Saved: " + m.file, "soft");
+}
+
+$("start").addEventListener("click", () => {
+  const engine = $("engine").value;
+  if (!state.callOn && !confirm("The call's sound is not shared, so only your side will be heard. Start anyway?")) return;
+  const ws = new WebSocket(`ws://${location.host}/ws`);
+  ws.binaryType = "arraybuffer";
+  state.ws = ws;
+  ws.onopen = () => {
+    ws.send(JSON.stringify({ type: "start", engine, primary: $("primary").value, mode: document.querySelector("input[name=mode]:checked").value, label: $("label").value.trim(), context: $("context").value.trim(), referral: $("referral").value.trim(), asked: $("asked").value.trim() }));
+    state.live = true;
+    state.startedAt = Date.now();
+    $("setup").classList.add("hidden");
+    $("live").classList.remove("hidden");
+    $("end").classList.remove("hidden");
+    $("cols").classList.toggle("two", engine === "both");
+    $("colLocal").classList.toggle("hidden", engine === "deepgram");
+    $("colDg").classList.toggle("hidden", engine === "local");
+    card({ stop: "Welcome", path: "", have: {}, next: "Thank them, a little small chat, then your short intro.", why: "The Welcome sets the frame before any questions.", watch: "" });
+    setInterval(() => {
+      if (!state.live) return;
+      const s = Math.floor((Date.now() - state.startedAt) / 1000);
+      $("pClock").textContent = String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+    }, 1000);
+  };
+  ws.onmessage = (event) => {
+    const m = JSON.parse(event.data);
+    if (m.type === "status") {
+      pill($("pLocal"), "Local Whisper: " + m.local, m.local === "listening" ? "on" : m.local === "off" ? "" : "bad");
+      pill($("pDg"), "Deepgram: " + m.deepgram, m.deepgram === "listening" ? "on" : m.deepgram === "off" ? "" : "bad");
+    } else if (m.type === "interim") {
+      line(m.engine, m.who, m.text, undefined, true);
+    } else if (m.type === "final") {
+      line(m.engine, m.who, m.text, m.lagMs, false);
+      const lags = state.lag[m.engine];
+      lags.push(m.lagMs);
+      $(m.engine === "local" ? "lagLocal" : "lagDg").textContent = (lags.reduce((a, b) => a + b, 0) / lags.length / 1000).toFixed(1) + " s behind";
+      setShare(m.share);
+    } else if (m.type === "coach") {
+      card(m.card, m.share);
+      pill($("pCoach"), "Coach: card took " + (m.tookMs / 1000).toFixed(0) + " s", "on");
+    } else if (m.type === "debrief") {
+      debrief(m);
+    } else if (m.type === "error") {
+      showError(m.text);
+      if (!$("after").classList.contains("hidden")) $("debrief").append(document.createTextNode(" " + m.text));
+    }
+  };
+  ws.onclose = () => { if (state.live) showError("Lost the link to the coach server. Run the call coach again."); };
+});
+
+$("end").addEventListener("click", () => {
+  if (!state.ws) return;
+  state.ws.send(JSON.stringify({ type: "stop" }));
+  state.live = false;
+  $("end").classList.add("hidden");
+  $("live").classList.add("hidden");
+  $("after").classList.remove("hidden");
+});
+</script>
+</body>
+</html>

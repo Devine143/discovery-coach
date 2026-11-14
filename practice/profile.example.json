@@ -1,0 +1,13 @@
+{
+  "name": "Sam",
+  "from": "Manchester, UK",
+  "background": "I ran an accounting practice for 12 years",
+  "referrer": "Priya",
+  "referrerStory": "a former client whose clinic now runs its bookings on a system I built",
+  "market": "Owners of small service businesses in the north of England: clinics, trades, salons, accountants.",
+  "places": ["Manchester", "Leeds", "Liverpool", "Sheffield", "Chester", "York"],
+  "trades": [],
+  "english": "British English",
+  "money": "Pounds as £8 500",
+  "plain": true
+}
