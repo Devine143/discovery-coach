@@ -681,6 +681,11 @@ Bun.serve<undefined>({
   idleTimeout: 120,
   fetch(req, server) {
     const url = new URL(req.url);
+    // Only this page, by its own address: blocks DNS rebinding and other sites reading the profile.
+    const host = req.headers.get("host");
+    if (host !== `localhost:${PORT}` && host !== `127.0.0.1:${PORT}`) return new Response("Forbidden", { status: 403 });
+    const site = req.headers.get("sec-fetch-site");
+    if (url.pathname.startsWith("/api/") && site && site !== "same-origin" && site !== "none") return new Response("Forbidden", { status: 403 });
     if (url.pathname === "/ws") {
       // Only this page may connect. Any other website open in the browser is refused.
       const origin = req.headers.get("origin");
