@@ -359,6 +359,17 @@ Bun.serve({
   idleTimeout: 120,
   async fetch(req) {
     const url = new URL(req.url);
+    // Only this page may call the server: another website open in Chrome must not spend your Claude or Deepgram.
+    const host = req.headers.get("host");
+    if (host !== `localhost:${PORT}` && host !== `127.0.0.1:${PORT}`) return new Response("Forbidden", { status: 403 });
+    // A GET from another site (e.g. an <audio> tag pointing at /api/speak) would spend the Deepgram key. Chrome labels those.
+    const site = req.headers.get("sec-fetch-site");
+    if (url.pathname.startsWith("/api/") && site && site !== "same-origin" && site !== "none") return new Response("Forbidden", { status: 403 });
+    if (req.method !== "GET") {
+      const origin = req.headers.get("origin");
+      if (origin !== `http://localhost:${PORT}` && origin !== `http://127.0.0.1:${PORT}`) return new Response("Forbidden", { status: 403 });
+      if (!req.headers.get("content-type")?.startsWith("application/json")) return new Response("Unsupported", { status: 415 });
+    }
     try {
       if (url.pathname === "/") return new Response(Bun.file(join(HERE, "index.html")));
 
